@@ -1,25 +1,43 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from "react";
+import { getAllBreeds } from "./api";
+import { Button } from "./Button";
+import { Modal } from "./Modal";
+import { useModal } from "./Modal/useModal";
+import { GlobalStyles, MainContainer, MainTitle } from "./styled";
 
 function App() {
+  const [breeds, setBreeds] = useState<string[]>([]);
+  const { isModalOpened, breedTypeForModal, openModal, closeModal } =
+    useModal();
+
+  useEffect(() => {
+    const initializeAppWithAllBreeds = async () => {
+      const apiResponse = await getAllBreeds();
+      const allAvailableBreeds = Object.keys(apiResponse.message);
+      setBreeds(allAvailableBreeds);
+    };
+    initializeAppWithAllBreeds();
+  }, []);
+
+  if (!breeds) {
+    return null;
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <GlobalStyles />
+      <MainTitle>Dogenerator 🐶</MainTitle>
+      <MainContainer>
+        {breeds.map((breed) => (
+          <Button breed={breed} onClick={() => openModal(breed)} key={breed} />
+        ))}
+      </MainContainer>
+      <Modal
+        isOpen={isModalOpened}
+        onRequestClose={closeModal}
+        currentBreed={breedTypeForModal}
+      />
+    </>
   );
 }
 
